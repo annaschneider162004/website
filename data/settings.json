@@ -10,6 +10,11 @@
     "instagram": "https://instagram.com/musicofeveryone",
     "youtube": "https://youtube.com/musicofeveryone",
     "zalo": "0987654321",
+<<<<<<< HEAD
     "latitude": "21.0285",
     "longitude": "105.8542"
+=======
+    "latitude": 21.0285,
+    "longitude": 105.8542
+>>>>>>> origin/main
 }
