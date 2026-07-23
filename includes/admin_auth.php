@@ -2,9 +2,21 @@
 /**
  * Bảo vệ trang admin — include file này ở đầu mỗi trang trong admin/
  * Nếu chưa đăng nhập sẽ chuyển hướng về trang đăng nhập.
+ *
+ * Lưu ý: config.php phải được include TRƯỚC file này để ADMIN_SESSION_NAME khả dụng.
  */
 
+// Đảm bảo config.php đã được load (bảo vệ phòng trường hợp include thứ tự sai)
+if (!defined('ADMIN_SESSION_NAME')) {
+    require_once __DIR__ . '/config.php';
+}
+
 if (session_status() === PHP_SESSION_NONE) {
+    // Fallback session save path cho shared hosting
+    $sessionSavePath = session_save_path();
+    if (empty($sessionSavePath) || !is_dir($sessionSavePath) || !is_writable($sessionSavePath)) {
+        session_save_path(sys_get_temp_dir());
+    }
     session_name(ADMIN_SESSION_NAME);
     session_start();
 }

@@ -1,8 +1,19 @@
 <?php
 /**
  * Admin Panel – Đăng nhập
+ *
+ * DEBUG: Nếu vẫn không đăng nhập được, tạm thời bật 2 dòng dưới để xem lỗi:
+ *   ini_set('display_errors', 1);
+ *   error_reporting(E_ALL);
+ * Truy cập lại trang và đọc thông báo lỗi. NHỚ XÓA 2 DÒNG NÀY SAU KHI DEBUG XONG!
  */
 require_once __DIR__ . '/../includes/config.php';
+
+// Fallback session save path cho shared hosting (một số host không ghi được vào thư mục mặc định)
+$sessionSavePath = session_save_path();
+if (empty($sessionSavePath) || !is_dir($sessionSavePath) || !is_writable($sessionSavePath)) {
+    session_save_path(sys_get_temp_dir());
+}
 
 session_name(ADMIN_SESSION_NAME);
 session_start();
@@ -14,14 +25,24 @@ if (!empty($_SESSION['admin_logged_in'])) {
 }
 
 $error = '';
-$csrfToken = bin2hex(random_bytes(16));
-$_SESSION['csrf_token'] = $csrfToken;
+
+// Chỉ tạo CSRF token mới khi là GET request (hoặc khi chưa có token trong session).
+// KHÔNG tạo mới trên POST vì sẽ ghi đè token cũ trước khi kịp kiểm tra → CSRF luôn thất bại.
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_SESSION['csrf_token'])) {
+    $csrfToken = bin2hex(random_bytes(16));
+    $_SESSION['csrf_token'] = $csrfToken;
+} else {
+    $csrfToken = $_SESSION['csrf_token'];
+}
 
 // Xử lý form đăng nhập
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate CSRF
     if (empty($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
         $error = 'Yêu cầu không hợp lệ. Vui lòng thử lại.';
+        // Tạo token mới sau CSRF failure
+        $csrfToken = bin2hex(random_bytes(16));
+        $_SESSION['csrf_token'] = $csrfToken;
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -36,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             $error = 'Tên đăng nhập hoặc mật khẩu không đúng.';
-            // Tạo token mới sau khi sai
+            // Tạo token mới sau khi sai để tránh reuse
             $csrfToken = bin2hex(random_bytes(16));
             $_SESSION['csrf_token'] = $csrfToken;
         }
