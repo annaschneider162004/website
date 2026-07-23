@@ -61,6 +61,15 @@ Options -Indexes
 </IfModule>
 
 # -------------------------------------------------------
+# Chặn truy cập trực tiếp vào thư mục includes/ và data/
+# -------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^includes/   - [F,L]
+    RewriteRule ^data/       - [F,L]
+</IfModule>
+
+# -------------------------------------------------------
 # PHP includes bên ngoài webroot (bảo vệ includes/)
 # -------------------------------------------------------
 <FilesMatch "^(db|config)\.php$">
@@ -69,9 +78,9 @@ Options -Indexes
 </FilesMatch>
 
 # -------------------------------------------------------
-# Custom Error Pages (bỏ comment để dùng)
+# Custom Error Pages
 # -------------------------------------------------------
-# ErrorDocument 404 /index.php
+ErrorDocument 404 /index.php
 # ErrorDocument 403 /index.php
 # ErrorDocument 500 /index.php
 

@@ -2,6 +2,55 @@
 /**
  * index.php – Trang chủ MusicOfEveryone Music Club
  */
+
+// -------------------------------------------------------
+// Tải dữ liệu từ JSON
+// -------------------------------------------------------
+function loadJson(string $file): array {
+    if (!file_exists($file)) return [];
+    $data = json_decode(file_get_contents($file), true);
+    return is_array($data) ? $data : [];
+}
+
+$dataDir  = __DIR__ . '/data/';
+$settings = loadJson($dataDir . 'settings.json');
+$courses  = loadJson($dataDir . 'courses.json');
+$teachers = loadJson($dataDir . 'teachers.json');
+
+// Giá trị mặc định từ settings
+$address  = htmlspecialchars($settings['address']  ?? '', ENT_QUOTES, 'UTF-8');
+$phone    = htmlspecialchars($settings['phone']    ?? '', ENT_QUOTES, 'UTF-8');
+$email    = htmlspecialchars($settings['email']    ?? '', ENT_QUOTES, 'UTF-8');
+$hours    = htmlspecialchars($settings['hours']    ?? '', ENT_QUOTES, 'UTF-8');
+$facebook = htmlspecialchars($settings['facebook'] ?? '', ENT_QUOTES, 'UTF-8');
+$youtube  = htmlspecialchars($settings['youtube']  ?? '', ENT_QUOTES, 'UTF-8');
+$zalo     = htmlspecialchars($settings['zalo']     ?? '', ENT_QUOTES, 'UTF-8');
+
+// Tọa độ bản đồ (mặc định Hà Nội)
+$lat = (isset($settings['latitude'])  && $settings['latitude']  !== '') ? (float)$settings['latitude']  : 21.0285;
+$lng = (isset($settings['longitude']) && $settings['longitude'] !== '') ? (float)$settings['longitude'] : 105.8542;
+
+// Validate lat/lng ranges
+if ($lat < -90 || $lat > 90)   { $lat = 21.0285; }
+if ($lng < -180 || $lng > 180) { $lng = 105.8542; }
+
+$mapUrl = 'https://www.google.com/maps?q=' . $lat . ',' . $lng . '&output=embed';
+
+// Màu gradient cho course card theo tên khoá học (fallback theo index)
+$courseGradients = [
+    'thanh nhạc' => 'linear-gradient(135deg,#064e3b 0%,#065f46 100%)',
+    'piano'      => 'linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%)',
+    'violin'     => 'linear-gradient(135deg,#4c1d95 0%,#6d28d9 100%)',
+    'sáo recorder' => 'linear-gradient(135deg,#92400e 0%,#d97706 100%)',
+    'guitar'     => 'linear-gradient(135deg,#134e4a 0%,#0d9488 100%)',
+];
+$defaultGradients = [
+    'linear-gradient(135deg,#064e3b 0%,#065f46 100%)',
+    'linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%)',
+    'linear-gradient(135deg,#4c1d95 0%,#6d28d9 100%)',
+    'linear-gradient(135deg,#92400e 0%,#d97706 100%)',
+];
+
 $page_title = 'MusicOfEveryone – Music Club | Học nhạc cho mọi lứa tuổi';
 $page_desc  = 'Học nhạc online chuẩn – lộ trình rõ ràng từ cơ bản đến nâng cao, phù hợp mọi lứa tuổi. Thanh nhạc, Piano, Violin, Guitar và nhiều hơn nữa.';
 include 'includes/header.php';
@@ -273,7 +322,7 @@ include 'includes/header.php';
   <!-- end FEATURE BAR -->
 
   <!-- =============================================
-       FEATURED COURSES
+       FEATURED COURSES – đọc động từ data/courses.json
        ============================================= -->
   <section class="courses" aria-labelledby="courses-heading">
     <div class="container">
@@ -292,173 +341,149 @@ include 'includes/header.php';
       </div>
 
       <div class="course-grid">
-
-        <!-- Course 1: Thanh nhạc -->
-        <article class="course-card" aria-label="Khóa học Thanh nhạc">
-          <svg class="course-card-svg" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <!-- Background gradient -->
-            <defs>
-              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%"   style="stop-color:#064e3b;stop-opacity:1"/>
-                <stop offset="100%" style="stop-color:#065f46;stop-opacity:1"/>
-              </linearGradient>
-            </defs>
-            <rect width="300" height="400" fill="url(#grad1)"/>
-            <!-- Decorative circles -->
-            <circle cx="250" cy="50"  r="80"  fill="rgba(255,255,255,.04)"/>
-            <circle cx="30"  cy="300" r="60"  fill="rgba(255,255,255,.04)"/>
-            <!-- Mic illustration -->
-            <rect x="138" y="130" width="24" height="50" rx="12" fill="rgba(255,255,255,.85)"/>
-            <rect x="128" y="170" width="44" height="8"  rx="4"  fill="rgba(255,255,255,.6)"/>
-            <rect x="147" y="178" width="6"  height="22" rx="3"  fill="rgba(255,255,255,.6)"/>
-            <rect x="138" y="200" width="24" height="4"  rx="2"  fill="rgba(255,255,255,.5)"/>
-            <!-- Sound waves -->
-            <path d="M120 155 Q110 165 120 175" stroke="rgba(255,255,255,.5)" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <path d="M107 148 Q92  165 107 182" stroke="rgba(255,255,255,.35)" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <path d="M180 155 Q190 165 180 175" stroke="rgba(255,255,255,.5)" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <path d="M193 148 Q208 165 193 182" stroke="rgba(255,255,255,.35)" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <!-- Music note -->
-            <text x="220" y="90" font-size="40" fill="rgba(255,255,255,.25)">♪</text>
-            <text x="40"  y="120" font-size="28" fill="rgba(255,255,255,.2)">♫</text>
-          </svg>
+        <?php
+        $courseIcons = [
+            'thanh nhạc'   => '🎤',
+            'piano'        => '🎹',
+            'violin'       => '🎻',
+            'sáo recorder' => '🪈',
+            'guitar'       => '🎸',
+        ];
+        foreach ($courses as $idx => $course):
+            $nameLower = mb_strtolower($course['name'] ?? '', 'UTF-8');
+            $gradient  = $courseGradients[$nameLower] ?? $defaultGradients[$idx % count($defaultGradients)];
+            $icon      = $courseIcons[$nameLower] ?? '🎵';
+            $level     = htmlspecialchars($course['level'] ?? 'Cơ bản đến nâng cao', ENT_QUOTES, 'UTF-8');
+            $name      = htmlspecialchars($course['name']        ?? '', ENT_QUOTES, 'UTF-8');
+            $desc      = htmlspecialchars($course['description'] ?? '', ENT_QUOTES, 'UTF-8');
+        ?>
+        <article class="course-card" aria-label="Khóa học <?= $name ?>">
+          <div class="course-card-bg" style="background:<?= $gradient ?>; display:flex; align-items:center; justify-content:center;">
+            <span style="font-size:5rem; opacity:.35;"><?= $icon ?></span>
+          </div>
           <div class="course-overlay" aria-hidden="true"></div>
           <div class="course-body">
-            <span class="course-badge">Cơ bản đến nâng cao</span>
-            <div class="course-name">Thanh nhạc</div>
-            <div class="course-desc">Học hát chuẩn – Tự tin tỏa sáng</div>
+            <span class="course-badge"><?= $level ?></span>
+            <div class="course-name"><?= $name ?></div>
+            <div class="course-desc"><?= $desc ?></div>
           </div>
         </article>
-
-        <!-- Course 2: Piano -->
-        <article class="course-card" aria-label="Khóa học Piano">
-          <svg class="course-card-svg" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%"   style="stop-color:#1e3a5f;stop-opacity:1"/>
-                <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1"/>
-              </linearGradient>
-            </defs>
-            <rect width="300" height="400" fill="url(#grad2)"/>
-            <circle cx="260" cy="60"  r="90" fill="rgba(255,255,255,.04)"/>
-            <circle cx="20"  cy="340" r="70" fill="rgba(255,255,255,.04)"/>
-            <!-- Piano illustration -->
-            <rect x="50" y="160" width="200" height="80" rx="8" fill="rgba(0,0,0,.5)"/>
-            <rect x="54" y="164" width="192" height="68" rx="5" fill="rgba(255,255,255,.9)"/>
-            <!-- White keys -->
-            <rect x="58"  y="166" width="22" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <rect x="84"  y="166" width="22" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <rect x="110" y="166" width="22" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <rect x="136" y="166" width="22" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <rect x="162" y="166" width="22" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <rect x="188" y="166" width="22" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <rect x="214" y="166" width="22" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <rect x="240" y="166" width="10" height="60" rx="3" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
-            <!-- Black keys -->
-            <rect x="72"  y="166" width="14" height="38" rx="3" fill="#1f2937"/>
-            <rect x="98"  y="166" width="14" height="38" rx="3" fill="#1f2937"/>
-            <rect x="150" y="166" width="14" height="38" rx="3" fill="#1f2937"/>
-            <rect x="176" y="166" width="14" height="38" rx="3" fill="#1f2937"/>
-            <rect x="202" y="166" width="14" height="38" rx="3" fill="#1f2937"/>
-            <!-- Decorative notes -->
-            <text x="200" y="80"  font-size="50" fill="rgba(255,255,255,.2)">♬</text>
-            <text x="30"  y="150" font-size="32" fill="rgba(255,255,255,.15)">♪</text>
-          </svg>
-          <div class="course-overlay" aria-hidden="true"></div>
-          <div class="course-body">
-            <span class="course-badge">Cơ bản đến nâng cao</span>
-            <div class="course-name">Piano</div>
-            <div class="course-desc">Khơi nguồn cảm hứng âm nhạc</div>
-          </div>
-        </article>
-
-        <!-- Course 3: Violin -->
-        <article class="course-card" aria-label="Khóa học Violin">
-          <svg class="course-card-svg" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%"   style="stop-color:#4c1d95;stop-opacity:1"/>
-                <stop offset="100%" style="stop-color:#6d28d9;stop-opacity:1"/>
-              </linearGradient>
-            </defs>
-            <rect width="300" height="400" fill="url(#grad3)"/>
-            <circle cx="240" cy="80"  r="100" fill="rgba(255,255,255,.04)"/>
-            <circle cx="40"  cy="320" r="80"  fill="rgba(255,255,255,.04)"/>
-            <!-- Violin body -->
-            <ellipse cx="150" cy="240" rx="40" ry="55" fill="rgba(180,83,9,.7)"/>
-            <ellipse cx="150" cy="200" rx="30" ry="35" fill="rgba(180,83,9,.7)"/>
-            <!-- Violin waist -->
-            <rect x="124" y="218" width="52" height="20" rx="0" fill="rgba(146,64,14,.7)"/>
-            <!-- f-holes -->
-            <ellipse cx="138" cy="240" rx="3" ry="12" fill="rgba(0,0,0,.4)"/>
-            <ellipse cx="162" cy="240" rx="3" ry="12" fill="rgba(0,0,0,.4)"/>
-            <!-- Bridge -->
-            <rect x="143" y="250" width="14" height="4" rx="1" fill="rgba(255,255,255,.5)"/>
-            <!-- Strings -->
-            <line x1="145" y1="140" x2="145" y2="295" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
-            <line x1="149" y1="140" x2="149" y2="295" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
-            <line x1="153" y1="140" x2="153" y2="295" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
-            <line x1="157" y1="140" x2="157" y2="295" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
-            <!-- Neck -->
-            <rect x="143" y="110" width="14" height="90" rx="4" fill="rgba(217,119,6,.7)"/>
-            <!-- Scroll/pegs -->
-            <circle cx="150" cy="108" r="8" fill="rgba(217,119,6,.7)"/>
-            <!-- Bow -->
-            <line x1="80" y1="100" x2="220" y2="280" stroke="rgba(255,255,255,.4)" stroke-width="3" stroke-linecap="round"/>
-            <line x1="84" y1="96"  x2="224" y2="276" stroke="rgba(255,255,255,.2)" stroke-width="8"  stroke-linecap="round"/>
-            <!-- Notes -->
-            <text x="220" y="90"  font-size="42" fill="rgba(255,255,255,.2)">♩</text>
-            <text x="30"  y="140" font-size="28" fill="rgba(255,255,255,.15)">♬</text>
-          </svg>
-          <div class="course-overlay" aria-hidden="true"></div>
-          <div class="course-body">
-            <span class="course-badge">Cơ bản đến nâng cao</span>
-            <div class="course-name">Violin</div>
-            <div class="course-desc">Cảm nhận giai điệu du dương</div>
-          </div>
-        </article>
-
-        <!-- Course 4: Sáo Recorder -->
-        <article class="course-card" aria-label="Khóa học Sáo Recorder">
-          <svg class="course-card-svg" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%"   style="stop-color:#92400e;stop-opacity:1"/>
-                <stop offset="100%" style="stop-color:#d97706;stop-opacity:1"/>
-              </linearGradient>
-            </defs>
-            <rect width="300" height="400" fill="url(#grad4)"/>
-            <circle cx="230" cy="70"  r="90" fill="rgba(255,255,255,.05)"/>
-            <circle cx="50"  cy="340" r="75" fill="rgba(255,255,255,.05)"/>
-            <!-- Recorder body (diagonal) -->
-            <rect x="70" y="80" width="20" height="250" rx="10"
-                  transform="rotate(15 150 200)" fill="rgba(255,255,255,.75)"/>
-            <!-- Finger holes -->
-            <circle cx="148" cy="140" r="5" fill="rgba(0,0,0,.35)" transform="rotate(15 150 200)"/>
-            <circle cx="148" cy="165" r="5" fill="rgba(0,0,0,.35)" transform="rotate(15 150 200)"/>
-            <circle cx="148" cy="190" r="5" fill="rgba(0,0,0,.35)" transform="rotate(15 150 200)"/>
-            <circle cx="148" cy="215" r="5" fill="rgba(0,0,0,.35)" transform="rotate(15 150 200)"/>
-            <circle cx="148" cy="240" r="5" fill="rgba(0,0,0,.35)" transform="rotate(15 150 200)"/>
-            <circle cx="148" cy="265" r="5" fill="rgba(0,0,0,.35)" transform="rotate(15 150 200)"/>
-            <!-- Mouthpiece -->
-            <rect x="67" y="76" width="26" height="20" rx="8"
-                  transform="rotate(15 150 200)" fill="rgba(255,255,255,.9)"/>
-            <!-- Notes -->
-            <text x="190" y="90"  font-size="45" fill="rgba(255,255,255,.2)">♫</text>
-            <text x="40"  y="160" font-size="30" fill="rgba(255,255,255,.15)">♪</text>
-            <text x="210" y="300" font-size="26" fill="rgba(255,255,255,.15)">♩</text>
-          </svg>
-          <div class="course-overlay" aria-hidden="true"></div>
-          <div class="course-body">
-            <span class="course-badge">Cơ bản</span>
-            <div class="course-name">Sáo Recorder</div>
-            <div class="course-desc">Dễ học – Dễ chơi – Dễ yêu thích</div>
-          </div>
-        </article>
-
+        <?php endforeach; ?>
       </div>
     </div>
   </section>
   <!-- end FEATURED COURSES -->
+
+  <!-- =============================================
+       CTA SECTION
+       ============================================= -->
+  <section class="section-cta" aria-label="Đăng ký học">
+    <div class="container">
+      <h2>Sẵn Sàng Bắt Đầu Hành Trình Âm Nhạc?</h2>
+      <p>Đăng ký tư vấn miễn phí ngay hôm nay. Giảng viên sẽ tư vấn khóa học phù hợp nhất với bạn.</p>
+      <a href="#location" class="btn-cta">📞 Liên hệ tư vấn miễn phí</a>
+    </div>
+  </section>
+  <!-- end CTA SECTION -->
+
+  <!-- =============================================
+       ĐỊA CHỈ & LIÊN HỆ – tọa độ đọc từ data/settings.json
+       ============================================= -->
+  <section class="section-location" id="location" aria-labelledby="location-heading">
+    <div class="container">
+
+      <div class="section-header">
+        <h2 class="section-title" id="location-heading">
+          📍 Địa Chỉ &amp; Liên Hệ
+        </h2>
+        <p>Ghé thăm chúng tôi hoặc liên hệ để được tư vấn miễn phí</p>
+      </div>
+
+      <div class="location-grid">
+
+        <!-- Thông tin liên hệ -->
+        <div class="contact-info">
+          <?php if ($address): ?>
+          <div class="contact-item">
+            <div class="contact-item-icon">📍</div>
+            <div class="contact-item-body">
+              <h4>Địa chỉ</h4>
+              <p><?= $address ?></p>
+            </div>
+          </div>
+          <?php endif; ?>
+
+          <?php if ($phone): ?>
+          <div class="contact-item">
+            <div class="contact-item-icon">📞</div>
+            <div class="contact-item-body">
+              <h4>Số điện thoại</h4>
+              <p><a href="tel:<?= htmlspecialchars(preg_replace('/\s+/', '', $phone), ENT_QUOTES, 'UTF-8') ?>"><?= $phone ?></a></p>
+            </div>
+          </div>
+          <?php endif; ?>
+
+          <?php if ($email): ?>
+          <div class="contact-item">
+            <div class="contact-item-icon">✉️</div>
+            <div class="contact-item-body">
+              <h4>Email</h4>
+              <p><a href="mailto:<?= $email ?>"><?= $email ?></a></p>
+            </div>
+          </div>
+          <?php endif; ?>
+
+          <?php if ($hours): ?>
+          <div class="contact-item">
+            <div class="contact-item-icon">🕐</div>
+            <div class="contact-item-body">
+              <h4>Giờ làm việc</h4>
+              <p><?= $hours ?></p>
+            </div>
+          </div>
+          <?php endif; ?>
+
+          <?php if ($facebook || $youtube || $zalo): ?>
+          <div class="social-links">
+            <?php if ($facebook): ?>
+            <a href="<?= $facebook ?>" class="social-link" target="_blank" rel="noopener noreferrer">
+              📘 Facebook
+            </a>
+            <?php endif; ?>
+            <?php if ($youtube): ?>
+            <a href="<?= $youtube ?>" class="social-link" target="_blank" rel="noopener noreferrer">
+              ▶️ YouTube
+            </a>
+            <?php endif; ?>
+            <?php if ($zalo): ?>
+            <a href="https://zalo.me/<?= htmlspecialchars(urlencode($zalo), ENT_QUOTES, 'UTF-8') ?>" class="social-link" target="_blank" rel="noopener noreferrer">
+              💬 Zalo
+            </a>
+            <?php endif; ?>
+          </div>
+          <?php endif; ?>
+        </div>
+
+        <!-- Bản đồ Google Maps -->
+        <div class="map-container">
+          <div class="map-wrapper">
+            <iframe
+              src="<?= htmlspecialchars($mapUrl, ENT_QUOTES, 'UTF-8') ?>"
+              title="Bản đồ MusicOfEveryone"
+              loading="lazy"
+              allowfullscreen
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+          <div class="map-caption">
+            📍 <?= $address ?: 'MusicOfEveryone Music Club' ?>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+  <!-- end ĐỊA CHỈ & LIÊN HỆ -->
 
 </main>
 
