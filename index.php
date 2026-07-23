@@ -7,9 +7,26 @@
 // Tải dữ liệu từ JSON
 // -------------------------------------------------------
 function loadJson(string $file): array {
-    if (!file_exists($file)) return [];
-    $data = json_decode(file_get_contents($file), true);
-    return is_array($data) ? $data : [];
+    if (!file_exists($file)) {
+        error_log('loadJson: file not found: ' . $file);
+        return [];
+    }
+    $content = file_get_contents($file);
+    if ($content === false) {
+        error_log('loadJson: cannot read file: ' . $file);
+        return [];
+    }
+    $data = json_decode($content, true);
+    if (!is_array($data)) {
+        error_log('loadJson: invalid JSON in file: ' . $file);
+        return [];
+    }
+    return $data;
+}
+
+/** Strips whitespace from a phone string for use in tel: links */
+function normalizePhone(string $phone): string {
+    return preg_replace('/\s+/', '', $phone);
 }
 
 $dataDir  = __DIR__ . '/data/';
@@ -418,7 +435,7 @@ include 'includes/header.php';
             <div class="contact-item-icon">📞</div>
             <div class="contact-item-body">
               <h4>Số điện thoại</h4>
-              <p><a href="tel:<?= htmlspecialchars(preg_replace('/\s+/', '', $phone), ENT_QUOTES, 'UTF-8') ?>"><?= $phone ?></a></p>
+              <p><a href="tel:<?= htmlspecialchars(normalizePhone($phone), ENT_QUOTES, 'UTF-8') ?>"><?= $phone ?></a></p>
             </div>
           </div>
           <?php endif; ?>
