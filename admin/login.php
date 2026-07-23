@@ -1,8 +1,18 @@
 <?php
 /**
  * Admin Panel – Đăng nhập
+ *
+ * DEBUG: Nếu vẫn không đăng nhập được, kiểm tra file error log của server
+ * (cPanel → Errors, hoặc error_log trong public_html). Để ghi thêm lỗi chi tiết
+ * vào log, thêm tạm dòng sau vào đầu file:
+ *   error_reporting(E_ALL); ini_set('log_errors', 1);
+ * KHÔNG dùng display_errors trên hosting thật vì có thể lộ thông tin nhạy cảm.
+ * NHỚ XÓA dòng debug sau khi xong!
  */
 require_once __DIR__ . '/../includes/config.php';
+
+// Cấu hình session path an toàn cho shared hosting
+configureSessionSavePath();
 
 session_name(ADMIN_SESSION_NAME);
 session_start();
@@ -14,14 +24,32 @@ if (!empty($_SESSION['admin_logged_in'])) {
 }
 
 $error = '';
-$csrfToken = bin2hex(random_bytes(16));
-$_SESSION['csrf_token'] = $csrfToken;
+
+/**
+ * Tạo CSRF token mới, lưu vào session và trả về giá trị token.
+ */
+function refreshCsrfToken(): string {
+    $token = bin2hex(random_bytes(16));
+    $_SESSION['csrf_token'] = $token;
+    return $token;
+}
+
+// Tạo CSRF token mới khi là GET request.
+// Trên POST: dùng token hiện có trong session để kiểm tra;
+// chỉ tạo mới nếu session chưa có token (trường hợp bất thường).
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $csrfToken = refreshCsrfToken();
+} else {
+    $csrfToken = $_SESSION['csrf_token'] ?? refreshCsrfToken();
+}
 
 // Xử lý form đăng nhập
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate CSRF
     if (empty($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
         $error = 'Yêu cầu không hợp lệ. Vui lòng thử lại.';
+        // Tạo token mới sau CSRF failure
+        $csrfToken = refreshCsrfToken();
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -36,9 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             $error = 'Tên đăng nhập hoặc mật khẩu không đúng.';
-            // Tạo token mới sau khi sai
-            $csrfToken = bin2hex(random_bytes(16));
-            $_SESSION['csrf_token'] = $csrfToken;
+            // Tạo token mới sau khi sai để tránh reuse
+            $csrfToken = refreshCsrfToken();
         }
     }
 }
