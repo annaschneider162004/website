@@ -14,15 +14,81 @@ website/
 ├── .htaccess               # Tối ưu Apache: gzip, cache-control, bảo mật
 ├── assets/
 │   ├── css/
-│   │   └── styles.css      # Toàn bộ CSS (CSS variables, Flexbox, Grid, responsive)
+│   │   ├── styles.css      # Toàn bộ CSS trang chủ (CSS variables, Flexbox, Grid, responsive)
+│   │   └── admin.css       # CSS khu vực quản trị
 │   ├── js/
 │   │   └── main.js         # Vanilla JS: hamburger menu, smooth scroll, header shadow
 │   └── images/             # Ảnh thật (thêm vào khi deploy)
-└── includes/
-    ├── header.php          # Phần đầu trang (HTML head + site header)
-    ├── footer.php          # Phần cuối trang (site footer + script tag)
-    └── db.php              # Khung kết nối PDO tới MySQL (điền thông tin khi deploy)
+├── data/                   # Dữ liệu JSON (bị chặn truy cập trực tiếp)
+│   ├── courses.json        # Danh sách khóa học
+│   ├── teachers.json       # Danh sách giảng viên
+│   ├── settings.json       # Cài đặt website & bản đồ
+│   └── .htaccess           # Chặn truy cập trực tiếp
+├── includes/
+│   ├── header.php          # Phần đầu trang (HTML head + site header)
+│   ├── footer.php          # Phần cuối trang (site footer + script tag)
+│   ├── db.php              # Khung kết nối PDO tới MySQL (điền thông tin khi deploy)
+│   ├── config.php          # Cấu hình & thông tin đăng nhập admin
+│   ├── admin_auth.php      # Kiểm tra session admin (dùng chung)
+│   ├── admin_layout.php    # Layout & helper functions cho admin
+│   ├── course_form_fields.php
+│   └── teacher_form_fields.php
+└── admin/
+    ├── login.php           # Đăng nhập admin
+    ├── logout.php          # Đăng xuất admin
+    ├── index.php           # Dashboard tổng quan
+    ├── courses.php         # Quản lý khóa học
+    ├── teachers.php        # Quản lý giảng viên
+    └── settings.php        # Cài đặt website & bản đồ
 ```
+
+---
+
+## 🔐 Trang quản trị Admin
+
+### Truy cập
+
+- **URL:** `/admin` hoặc `/admin/login.php`
+- **Tài khoản mặc định:** `admin` / `password`
+
+> ⚠️ **QUAN TRỌNG:** Đổi mật khẩu ngay sau khi cài đặt!
+
+### Đổi mật khẩu admin
+
+1. Tạo hash mật khẩu mới:
+   ```bash
+   php -r "echo password_hash('mật-khẩu-mới-của-bạn', PASSWORD_DEFAULT);"
+   ```
+2. Mở file `includes/config.php`
+3. Thay giá trị `ADMIN_PASSWORD_HASH` bằng hash vừa tạo
+
+### Tính năng quản trị
+
+| Trang | Mô tả |
+|-------|-------|
+| **Dashboard** | Tổng quan: số lượng khóa học, giảng viên, trạng thái bản đồ |
+| **Khóa học** | Thêm/sửa/xóa khóa học (tên, mô tả, trình độ, thời lượng) |
+| **Giảng viên** | Thêm/sửa/xóa giảng viên (tên, chuyên môn, mô tả, kinh nghiệm) |
+| **Cài đặt** | Thông tin website, địa chỉ, điện thoại, email, mạng xã hội, **tọa độ bản đồ** |
+
+---
+
+## 🗺️ Chức năng Bản đồ (Google Maps)
+
+Trang chủ hiển thị section **"Địa Chỉ & Liên Hệ"** cuối trang, bao gồm:
+- Thông tin liên hệ (địa chỉ, điện thoại, email, giờ làm việc)
+- Bản đồ Google Maps nhúng bằng iframe (không cần API key)
+
+### Cập nhật vị trí bản đồ
+
+1. Đăng nhập vào `/admin`
+2. Vào **Cài đặt** → mục **Bản đồ Google Maps**
+3. Nhập **Latitude** (Vĩ độ) và **Longitude** (Kinh độ) trong `admin/settings.php`
+4. Nhấn **Lưu cài đặt** → bản đồ trang chủ cập nhật ngay
+
+**Tra cứu tọa độ:** Mở [maps.google.com](https://maps.google.com) → click chuột phải vào địa điểm → chọn tọa độ hiển thị.
+
+Tọa độ mặc định: `21.0285, 105.8542` (Hà Nội, Việt Nam)
 
 ---
 
@@ -74,7 +140,16 @@ CREATE TABLE users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-### 5. Kiểm tra SSL / HTTPS
+### 5. Cấu hình quyền thư mục `data/`
+
+Đảm bảo thư mục `data/` có quyền ghi để Admin có thể lưu thay đổi:
+
+```bash
+chmod 755 data/
+chmod 644 data/*.json
+```
+
+### 6. Kiểm tra SSL / HTTPS
 
 Khi đã có SSL certificate (Let's Encrypt trong cPanel → SSL/TLS), bỏ comment dòng redirect trong `.htaccess`:
 

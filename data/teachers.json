@@ -1,0 +1,34 @@
+[
+    {
+        "id": 1,
+        "name": "Nguyễn Minh Tuấn",
+        "specialty": "Thanh Nhạc & Nhạc lý",
+        "image": "assets/images/teacher-1.jpg",
+        "description": "Tốt nghiệp Học viện Âm nhạc Quốc gia Việt Nam, hơn 10 năm kinh nghiệm giảng dạy thanh nhạc và nhạc lý cho mọi lứa tuổi.",
+        "experience": "10 năm"
+    },
+    {
+        "id": 2,
+        "name": "Trần Thị Lan Anh",
+        "specialty": "Piano",
+        "image": "assets/images/teacher-2.jpg",
+        "description": "Thạc sĩ âm nhạc chuyên ngành Piano tại Nhạc viện Hà Nội, từng biểu diễn tại nhiều sân khấu quốc tế.",
+        "experience": "8 năm"
+    },
+    {
+        "id": 3,
+        "name": "Lê Hoàng Nam",
+        "specialty": "Violin",
+        "image": "assets/images/teacher-3.jpg",
+        "description": "Nghệ sĩ Violin, từng là thành viên Dàn nhạc Giao hưởng Quốc gia Việt Nam với hơn 8 năm kinh nghiệm giảng dạy.",
+        "experience": "8 năm"
+    },
+    {
+        "id": 4,
+        "name": "Phạm Thu Hương",
+        "specialty": "Sáo Recorder & Sáo Trúc",
+        "image": "assets/images/teacher-4.jpg",
+        "description": "Chuyên gia về nhạc cụ hơi, tốt nghiệp xuất sắc Học viện Âm nhạc Quốc gia, đặc biệt yêu thích giảng dạy cho trẻ em.",
+        "experience": "6 năm"
+    }
+]
