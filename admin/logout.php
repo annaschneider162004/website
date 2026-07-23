@@ -2,7 +2,9 @@
 /**
  * Admin Panel – Đăng xuất
  */
-session_name('moe_admin_session');
+require_once __DIR__ . '/../includes/config.php';
+
+session_name(ADMIN_SESSION_NAME);
 session_start();
 session_destroy();
 header('Location: login.php');

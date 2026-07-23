@@ -43,11 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validate tọa độ
         $lat = trim($_POST['latitude']  ?? '');
         $lng = trim($_POST['longitude'] ?? '');
-        if ($lat !== '' && ($lat < -90 || $lat > 90)) {
-            $message = 'Latitude phải trong khoảng -90 đến 90.';
+        $latFloat = ($lat !== '') ? filter_var($lat, FILTER_VALIDATE_FLOAT) : null;
+        $lngFloat = ($lng !== '') ? filter_var($lng, FILTER_VALIDATE_FLOAT) : null;
+        if ($lat !== '' && ($latFloat === false || $latFloat < -90 || $latFloat > 90)) {
+            $message = 'Latitude phải là số hợp lệ trong khoảng -90 đến 90.';
             $msgType = 'danger';
-        } elseif ($lng !== '' && ($lng < -180 || $lng > 180)) {
-            $message = 'Longitude phải trong khoảng -180 đến 180.';
+        } elseif ($lng !== '' && ($lngFloat === false || $lngFloat < -180 || $lngFloat > 180)) {
+            $message = 'Longitude phải là số hợp lệ trong khoảng -180 đến 180.';
             $msgType = 'danger';
         } else {
             $newSettings['latitude']  = $lat;

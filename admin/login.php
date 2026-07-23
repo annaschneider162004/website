@@ -2,10 +2,10 @@
 /**
  * Admin Panel – Đăng nhập
  */
-session_name('moe_admin_session');
-session_start();
-
 require_once __DIR__ . '/../includes/config.php';
+
+session_name(ADMIN_SESSION_NAME);
+session_start();
 
 // Đã đăng nhập thì chuyển về dashboard
 if (!empty($_SESSION['admin_logged_in'])) {

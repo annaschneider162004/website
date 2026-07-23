@@ -114,7 +114,7 @@ $mapUrl = 'https://www.google.com/maps?q=' . $lat . ',' . $lng . '&output=embed'
                     <div class="stat-label">Năm kinh nghiệm</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">4</div>
+                    <div class="stat-number"><?= count($courses) ?></div>
                     <div class="stat-label">Khóa học</div>
                 </div>
             </div>
