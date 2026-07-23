@@ -2,18 +2,17 @@
 /**
  * Admin Panel – Đăng nhập
  *
- * DEBUG: Nếu vẫn không đăng nhập được, tạm thời bật 2 dòng dưới để xem lỗi:
- *   ini_set('display_errors', 1);
- *   error_reporting(E_ALL);
- * Truy cập lại trang và đọc thông báo lỗi. NHỚ XÓA 2 DÒNG NÀY SAU KHI DEBUG XONG!
+ * DEBUG: Nếu vẫn không đăng nhập được, kiểm tra file error log của server
+ * (cPanel → Errors, hoặc error_log trong public_html). Để ghi thêm lỗi chi tiết
+ * vào log, thêm tạm dòng sau vào đầu file:
+ *   error_reporting(E_ALL); ini_set('log_errors', 1);
+ * KHÔNG dùng display_errors trên hosting thật vì có thể lộ thông tin nhạy cảm.
+ * NHỚ XÓA dòng debug sau khi xong!
  */
 require_once __DIR__ . '/../includes/config.php';
 
-// Fallback session save path cho shared hosting (một số host không ghi được vào thư mục mặc định)
-$sessionSavePath = session_save_path();
-if (empty($sessionSavePath) || !is_dir($sessionSavePath) || !is_writable($sessionSavePath)) {
-    session_save_path(sys_get_temp_dir());
-}
+// Cấu hình session path an toàn cho shared hosting
+configureSessionSavePath();
 
 session_name(ADMIN_SESSION_NAME);
 session_start();

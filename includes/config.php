@@ -26,6 +26,18 @@ define('SETTINGS_FILE', DATA_DIR . 'settings.json');
 // Tên session admin
 define('ADMIN_SESSION_NAME', 'moe_admin_session');
 
+/**
+ * Cấu hình session an toàn cho shared hosting.
+ * Gọi hàm này TRƯỚC session_name() và session_start().
+ * Tự động fallback sang sys_get_temp_dir() nếu save_path mặc định không ghi được.
+ */
+function configureSessionSavePath(): void {
+    $path = session_save_path();
+    if (empty($path) || !is_dir($path) || !is_writable($path)) {
+        session_save_path(sys_get_temp_dir());
+    }
+}
+
 // TODO: Cấu hình kết nối MySQL khi có database thật
 // define('DB_HOST', 'localhost');
 // define('DB_NAME', 'musicofeveryone');

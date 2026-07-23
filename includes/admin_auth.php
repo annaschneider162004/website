@@ -12,11 +12,8 @@ if (!defined('ADMIN_SESSION_NAME')) {
 }
 
 if (session_status() === PHP_SESSION_NONE) {
-    // Fallback session save path cho shared hosting
-    $sessionSavePath = session_save_path();
-    if (empty($sessionSavePath) || !is_dir($sessionSavePath) || !is_writable($sessionSavePath)) {
-        session_save_path(sys_get_temp_dir());
-    }
+    // Cấu hình session path an toàn cho shared hosting
+    configureSessionSavePath();
     session_name(ADMIN_SESSION_NAME);
     session_start();
 }
