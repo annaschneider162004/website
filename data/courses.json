@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "name": "Thanh Nhạc",
+        "description": "Khóa học thanh nhạc chuyên nghiệp, giúp bạn rèn luyện giọng hát, kiểm soát hơi thở và biểu diễn tự tin trên sân khấu.",
+        "level": "Mọi trình độ",
+        "level_class": "badge-beginner",
+        "image": "assets/images/course-vocal.jpg",
+        "duration": "3 tháng",
+        "sessions": "2 buổi/tuần"
+    },
+    {
+        "id": 2,
+        "name": "Piano",
+        "description": "Học đàn Piano từ cơ bản đến nâng cao, nắm vững lý thuyết âm nhạc và kỹ thuật chơi đàn đúng chuẩn.",
+        "level": "Cơ bản – Nâng cao",
+        "level_class": "badge-intermediate",
+        "image": "assets/images/course-piano.jpg",
+        "duration": "6 tháng",
+        "sessions": "2 buổi/tuần"
+    },
+    {
+        "id": 3,
+        "name": "Violin",
+        "description": "Khóa học Violin dành cho mọi lứa tuổi, từ những nốt nhạc đầu tiên đến các bản nhạc cổ điển nổi tiếng.",
+        "level": "Mọi trình độ",
+        "level_class": "badge-beginner",
+        "image": "assets/images/course-violin.jpg",
+        "duration": "6 tháng",
+        "sessions": "2 buổi/tuần"
+    },
+    {
+        "id": 4,
+        "name": "Sáo Recorder",
+        "description": "Làm quen với âm nhạc qua cây sáo Recorder nhẹ nhàng, dễ học – lý tưởng cho trẻ em và người mới bắt đầu.",
+        "level": "Người mới bắt đầu",
+        "level_class": "badge-beginner",
+        "image": "assets/images/course-recorder.jpg",
+        "duration": "2 tháng",
+        "sessions": "3 buổi/tuần"
+    }
+]
