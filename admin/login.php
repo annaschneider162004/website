@@ -25,13 +25,22 @@ if (!empty($_SESSION['admin_logged_in'])) {
 
 $error = '';
 
-// Chỉ tạo CSRF token mới khi là GET request (hoặc khi chưa có token trong session).
-// KHÔNG tạo mới trên POST vì sẽ ghi đè token cũ trước khi kịp kiểm tra → CSRF luôn thất bại.
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_SESSION['csrf_token'])) {
-    $csrfToken = bin2hex(random_bytes(16));
-    $_SESSION['csrf_token'] = $csrfToken;
+/**
+ * Tạo CSRF token mới, lưu vào session và trả về giá trị token.
+ */
+function refreshCsrfToken(): string {
+    $token = bin2hex(random_bytes(16));
+    $_SESSION['csrf_token'] = $token;
+    return $token;
+}
+
+// Tạo CSRF token mới khi là GET request.
+// Trên POST: dùng token hiện có trong session để kiểm tra;
+// chỉ tạo mới nếu session chưa có token (trường hợp bất thường).
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $csrfToken = refreshCsrfToken();
 } else {
-    $csrfToken = $_SESSION['csrf_token'];
+    $csrfToken = $_SESSION['csrf_token'] ?? refreshCsrfToken();
 }
 
 // Xử lý form đăng nhập
@@ -40,8 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
         $error = 'Yêu cầu không hợp lệ. Vui lòng thử lại.';
         // Tạo token mới sau CSRF failure
-        $csrfToken = bin2hex(random_bytes(16));
-        $_SESSION['csrf_token'] = $csrfToken;
+        $csrfToken = refreshCsrfToken();
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -57,8 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = 'Tên đăng nhập hoặc mật khẩu không đúng.';
             // Tạo token mới sau khi sai để tránh reuse
-            $csrfToken = bin2hex(random_bytes(16));
-            $_SESSION['csrf_token'] = $csrfToken;
+            $csrfToken = refreshCsrfToken();
         }
     }
 }

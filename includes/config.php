@@ -30,11 +30,17 @@ define('ADMIN_SESSION_NAME', 'moe_admin_session');
  * Cấu hình session an toàn cho shared hosting.
  * Gọi hàm này TRƯỚC session_name() và session_start().
  * Tự động fallback sang sys_get_temp_dir() nếu save_path mặc định không ghi được.
+ *
+ * @return void
  */
 function configureSessionSavePath(): void {
     $path = session_save_path();
     if (empty($path) || !is_dir($path) || !is_writable($path)) {
-        session_save_path(sys_get_temp_dir());
+        $tempDir = sys_get_temp_dir();
+        if (is_writable($tempDir)) {
+            session_save_path($tempDir);
+        }
+        // Nếu cả hai đường dẫn đều không ghi được, PHP sẽ dùng thư mục mặc định của hệ thống.
     }
 }
 
