@@ -6,6 +6,33 @@
  */
 $page_title = $page_title ?? 'MusicOfEveryone – Music Club | Học nhạc cho mọi lứa tuổi';
 $page_desc  = $page_desc  ?? 'Học nhạc online chuẩn – lộ trình rõ ràng từ cơ bản đến nâng cao, phù hợp mọi lứa tuổi, học mọi lúc mọi nơi.';
+
+// ---------- CSRF helpers (session must be started before including header.php) ----------
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+if (!function_exists('csrf_field')) {
+    /** Render a hidden CSRF input field. */
+    function csrf_field(): string {
+        return '<input type="hidden" name="csrf_token" value="'
+             . htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8')
+             . '">';
+    }
+}
+
+if (!function_exists('csrf_valid')) {
+    /** Validate the CSRF token submitted via POST. */
+    function csrf_valid(): bool {
+        $token = $_POST['csrf_token'] ?? '';
+        return !empty($token)
+            && !empty($_SESSION['csrf_token'])
+            && hash_equals($_SESSION['csrf_token'], $token);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">

@@ -13,11 +13,23 @@
  */
 
 // ---------- Cấu hình kết nối ----------
-define('DB_HOST',   'localhost');      // Thường là localhost trên cPanel
-define('DB_NAME',   'your_db_name');   // TODO: điền tên database
-define('DB_USER',   'your_db_user');   // TODO: điền username database
-define('DB_PASS',   'your_db_pass');   // TODO: điền mật khẩu database
-define('DB_CHARSET','utf8mb4');
+// QUAN TRỌNG: Không điền thông tin thật trực tiếp vào file này nếu lưu trên git.
+// Cách an toàn nhất: đặt file config NGOÀI thư mục public_html, ví dụ:
+//   /home/<cpanel_user>/private/db_config.php
+// rồi require_once từ đây.
+//
+// Hoặc dùng biến môi trường (SetEnv trong .htaccess / cPanel → Environment Variables):
+//   define('DB_HOST',   getenv('DB_HOST')   ?: 'localhost');
+//   define('DB_NAME',   getenv('DB_NAME')   ?: '');
+//   define('DB_USER',   getenv('DB_USER')   ?: '');
+//   define('DB_PASS',   getenv('DB_PASS')   ?: '');
+//
+// Nếu chấp nhận lưu trong file (chỉ khi file không bị expose ra web), hãy điền vào đây:
+define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');   // TODO: điền tên host
+define('DB_NAME',    getenv('DB_NAME')    ?: '');            // TODO: điền tên database
+define('DB_USER',    getenv('DB_USER')    ?: '');            // TODO: điền username
+define('DB_PASS',    getenv('DB_PASS')    ?: '');            // TODO: điền mật khẩu
+define('DB_CHARSET', 'utf8mb4');
 
 /**
  * Trả về đối tượng PDO singleton.
